@@ -39,7 +39,7 @@ def search(
         maxResults: int = None,
         host: str = INTERNAL.SEARCH_API_HOST,
         cmr_token: str = None,
-        cmr_provider: str = None
+        cmr_provider: str = 'ASF'
 ) -> ASFSearchResults:
     """
     Performs a generic search using the ASF SearchAPI
