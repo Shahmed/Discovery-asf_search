@@ -1,5 +1,20 @@
 # Changelog
 
+## [3.0.3](https://github.com/asfadmin/Discovery-asf_search/compare/v3.0.2...v3.0.3)
+### Fixed
+- Replace `ASFProduct.centroid()` calculation with shapely-based calculation
+  - See: https://github.com/asfadmin/Discovery-asf_search/pull/53
+  - Removes numpy requirement
+  - Adds shapely requirement
+
+## [3.0.2](https://github.com/asfadmin/Discovery-asf_search/compare/v3.0.1...v3.0.2)
+### Added
+- Feature and Bug Report github issue templates
+
+### Fixed
+- Fix download authentication header issue during direct-to-S3 redirects
+- Fix Sentinel-1 stacking to include both A and B in stacks
+
 ## [3.0.1](https://github.com/asfadmin/Discovery-asf_search/compare/v3.0.0...v3.0.1)
 ### Added
 - `ASFProduct.nearest_neighbors()` provides `depth` temporally nearest neighbors (preceding) from a product's stack

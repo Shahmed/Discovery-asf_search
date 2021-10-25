@@ -1,5 +1,4 @@
-from typing import Iterable
-import numpy as np
+from shapely.geometry import shape, Point
 import json
 
 from asf_search import ASFSearchResults
@@ -106,11 +105,8 @@ class ASFProduct:
 
         return stack[-(depth+1):-1:]
 
-    def centroid(self) -> (Iterable[float]):
+    def centroid(self) -> Point:
         """
         Finds the centroid of a product
-        Shamelessly lifted from https://stackoverflow.com/a/23021198 and https://stackoverflow.com/a/57183264
         """
-        arr = np.array(self.geometry['coordinates'][0])
-        length, dim = arr.shape
-        return [np.sum(arr[:, i]) / length for i in range(dim)]
+        return shape(self.geometry).centroid
