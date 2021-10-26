@@ -67,7 +67,7 @@ def stack_from_id(
     :param start: Earliest date to include in the stack. Default includes all time. If this date excludes the reference, it will not be included in the stack.
     :param end: Latest date to include in the stack. Default includes all time. If this date excludes the reference, it will not be included in the stack.
     :param strategy: If the requested reference can not be used to calculate perpendicular baselines, this sort function will be used to pick an alternative reference from the stack. 'None' implies that no attempt will be made to find an alternative reference.
-    :param host: SearchAPI host, defaults to Production SearchAPI. This option is intended for dev/test purposes.
+    :param cmr_host: CMR API host, defaults to Production SearchAPI. This option is intended for dev/test purposes.
     :param cmr_token: EDL Auth Token for authenticated searches, see https://urs.earthdata.nasa.gov/user_tokens
     :param cmr_provider: Custom provider name to constrain CMR results to, for more info on how this is used, see https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#c-provider
 

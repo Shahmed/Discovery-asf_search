@@ -10,6 +10,7 @@ requirements = [
         "importlib_metadata",
         "dateparser",
         "WKTUtils==1.1.0",
+        "more-itertools"
     ]
 
 with open("README.md", "r") as readme_file:
