@@ -1,3 +1,6 @@
+from asf_search.ASFSearchOptions import ASFSearchOptions
+
+
 """
 Supported input parameters and their associated CMR parameters
 """
@@ -34,3 +37,23 @@ cmr_field_map = {
     'insarStackId':         ['attribute[]',             'int,INSAR_STACK_ID,{0}'],
     'instrument':           ['instrument[]',            '{0}']
 }
+
+
+def translate_opts(opts: ASFSearchOptions) -> list:
+    # Start by just grabbing the searchable parameters
+    dict_opts = dict(opts)
+
+    # convert the above parameters to a list of key/value tuples
+    cmr_opts = []
+    for (key, val) in dict_opts.items():
+        if isinstance(val, list):
+            for x in val:
+                cmr_opts.append((key, x))
+        else:
+            cmr_opts.append((key, val))
+
+    # translate the above tuples to CMR key/values
+    for i, opt in enumerate(cmr_opts):
+        cmr_opts[i] = cmr_field_map[opt[0]]['key'], cmr_field_map[opt[0]]['fmt'].format(opt[1])
+
+    return cmr_opts

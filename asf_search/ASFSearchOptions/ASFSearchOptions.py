@@ -1,5 +1,7 @@
 from collections import UserDict
 from .validator_map import validator_map, validate
+from asf_search import ASFSession
+from asf_search.constants import INTERNAL
 
 # NOTE: Keep going back and forth on if to accept custom attr's. (i.e. output=geojson)
 # leaning towards not, only because of how many edge cases there might be. (real maxResults vs custom maxresults)
@@ -9,11 +11,17 @@ from .validator_map import validator_map, validate
 # Have both versions below just in case, worth a design dive on:
 # Need to edit search.search, line 80ish with whichever we go with
 
+
 class ASFSearchOptions():
     def __init__(self, **kwargs):
         # init the built in attrs:
         for key in validator_map.keys():
             self.__setattr__(key, None)
+
+        # set any defaults
+        self.session = ASFSession()
+        self.host = INTERNAL.SEARCH_API_HOST
+        self.cmr_provider = INTERNAL.DEFAULT_PROVIDER
         
         # Apply any ones passsed in:
         for key, value in kwargs.items():
@@ -22,10 +30,18 @@ class ASFSearchOptions():
     def __setattr__(self, key, value):
         # self.* calls custom __setattr__ method, creating inf loop. Use super().*
         # Let values always be None, even if their validator doesn't agree. Used to delete them too:
-        if value is None:
-            super().__setattr__(key, None)
-        elif key in validator_map:
-            super().__setattr__(key, validate(key, value))
+        if key in validator_map:
+            if value is None: # maintain defaults
+                if key == 'cmr_provider':
+                    super().__setattr__(key, INTERNAL.DEFAULT_PROVIDER)
+                elif key == 'host':
+                    super().__setattr__(key, INTERNAL.SEARCH_API_HOST)
+                elif key == 'session':
+                    super().__setattr__(key, ASFSession)
+                else:
+                    super().__setattr__(key, None)
+            else:
+                super().__setattr__(key, validate(key, value))
         else:
             raise KeyError(f"key '{key}' is not a valid search option (setattr)")
             ## OR if we support custom attrs:

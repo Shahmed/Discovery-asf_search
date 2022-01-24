@@ -56,8 +56,9 @@ validator_map = {
     'groupID':                parse_string_list,
     'insarStackId':           parse_string,
     'instrument':             parse_string,
-#   Internal parameters       Parser
-    'asf_session':            parse_session,
+    # Config parameters       Parser
+    'session':                parse_session,
+    'host':                   parse_string
 }
 
 

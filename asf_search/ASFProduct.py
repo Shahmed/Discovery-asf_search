@@ -1,35 +1,41 @@
 from shapely.geometry import shape, Point
 import json
+from collections import UserList
 
-from asf_search import ASFSearchResults
-from asf_search import ASFSession
+from asf_search.download import download_url
+from asf_search.ASFSession import ASFSession
+from asf_search.ASFSearchOptions import ASFSearchOptions
+from asf_search.CMR import translate_product
 
 
 class ASFProduct:
-    def __init__(self, args: dict):
-        self.properties = args['properties']
-        self.geometry = args['geometry']
+    def __init__(self, item: dict):
+        translated = translate_product(item)
+        self.meta = item['meta']
+        self.umm = item['umm']
+        # TODO: figure out how to access these dynamically from umm/meta data
+        # Maybe use all fields as None with a custom __getattr__???????!
+        self.properties = translated['properties']
+        self.geometry = translated['geometry']
+
+    def __getattr__(self, item):
+        if item == 'properties':
+            return self.properties
+        if item == 'geometry':
+            return self.geometry
+        return super().__getattribute__(item)
 
     def __str__(self):
         return json.dumps(self.geojson(), indent=2, sort_keys=True)
 
     def geojson(self) -> dict:
-        """
-        Generates a geojson snippet describing the product
-        :return:
-        """
         return {
             'type': 'Feature',
             'geometry': self.geometry,
             'properties': self.properties
         }
 
-    def download(
-            self,
-            path: str,
-            filename: str = None,
-            session: ASFSession = None
-    ) -> None:
+    def download(self, path: str, filename: str = None, session: ASFSession = None) -> None:
         """
         Downloads this product to the specified path and optional filename.
 
@@ -39,8 +45,6 @@ class ASFProduct:
 
         :return: None
         """
-        from asf_search.download import download_url
-
         if filename is None:
             filename = self.properties['fileName']
 
@@ -48,62 +52,28 @@ class ASFProduct:
 
     def stack(
             self,
-            start: None,
-            end: None,
-            strategy=None,  # TODO: add support for alternate reference scene selection strategies
-            host: str = None,
-            cmr_token: str = None,
-            cmr_provider: str = None
-    ) -> ASFSearchResults:
+            opts: ASFSearchOptions = None
+    ) -> UserList:
         """
-        Finds a baseline stack from a reference ASFProduct
+        Builds a baseline stack from this product.
 
-        :param start: Earliest date to include in the stack. Default includes all time. If this date excludes the reference, it will not be included in the stack.
-        :param end: Latest date to include in the stack. Default includes all time. If this date excludes the reference, it will not be included in the stack.
-        :param strategy: If the requested reference can not be used to calculate perpendicular baselines, this sort function will be used to pick an alternative reference from the stack. 'None' implies that no attempt will be made to find an alternative reference.
-        :param host: SearchAPI host, defaults to Production SearchAPI. This option is intended for dev/test purposes.
-        :param cmr_token: EDL Auth Token for authenticated searches, see https://urs.earthdata.nasa.gov/user_tokens
-        :param cmr_provider: Custom provider name to constrain CMR results to, for more info on how this is used, see https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#c-provider
+        :param opts: An ASFSearchOptions object describing the search parameters to be used. Search parameters specified outside this object will override in event of a conflict.
 
-        :return: ASFSearchResults(dict) of search results
+        :return: ASFSearchResults containing the stack, with the addition of baseline values (temporal, perpendicular) attached to each ASFProduct.
         """
+        from .search.baseline_search import stack_from_product
 
-        from asf_search.search import search, get_stack_params, calc_temporal_baselines
+        return stack_from_product(self, opts=opts)
 
-        stack_params = get_stack_params(self)
-        stack_params['start'] = start
-        stack_params['end'] = end
-        stack = search(**stack_params, host=host, cmr_token=cmr_token, cmr_provider=cmr_provider)
-        calc_temporal_baselines(self, stack)
-        stack.sort(key=lambda product: product.properties['temporalBaseline'])
-
-        return stack
-
-    def nearest_neighbors(
-            self,
-            depth: int = 1,
-            host: str = None,
-            cmr_token: str = None,
-            cmr_provider: str = None
-    ) -> ASFSearchResults:
+    def get_stack_opts(self) -> ASFSearchOptions:
         """
-        Returns `depth` temporally nearest neighbors prior to this product
+        Build search options that can be used to find an insar stack for this product
 
-        :param depth: The number of neighbors to find
-        :param host: SearchAPI host, defaults to Production SearchAPI. This option is intended for dev/test purposes.
-        :param cmr_token: EDL Auth Token for authenticated searches, see https://urs.earthdata.nasa.gov/user_tokens
-        :param cmr_provider: Custom provider name to constrain CMR results to, for more info on how this is used, see https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#c-provider
-
-
-        :return: ASFSearchResults(list) containing the preceding neighbors
+        :return: ASFSearchOptions describing appropriate options for building a stack from this product
         """
-        stack = self.stack(
-            end=self.properties['end'],
-            host=host,
-            cmr_token=cmr_token,
-            cmr_provider=cmr_provider)
+        from .search.baseline_search import get_stack_opts
 
-        return stack[-(depth+1):-1:]
+        return get_stack_opts(reference=self)
 
     def centroid(self) -> Point:
         """

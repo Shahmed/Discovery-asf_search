@@ -14,23 +14,21 @@ from asf_search.exceptions import ASFSearch4xxError, ASFSearch5xxError, ASFServe
 from asf_search.constants import INTERNAL
 
 
-def search(data: Union[ASFSearchOptions, dict],
-        host: str = INTERNAL.SEARCH_API_HOST,
-        ) -> ASFSearchResults:
+def search(opts: Union[ASFSearchOptions, dict]) -> ASFSearchResults:
     """
     Performs a generic search using the ASF SearchAPI
 
     :return: ASFSearchResults(list) of search results
     """
     # Make sure data is a ASFSearchOptions 'dict', to get the params verified:
-    if type(data) is not ASFSearchOptions:
-        data = ASFSearchOptions(**data)
+    if type(opts) is not ASFSearchOptions:
+        data = ASFSearchOptions(**opts)
     else:
         # Don't add defaults to the original object:
-        data = copy(data)
+        opts = copy(opts)
     # Set some defaults:
-    if data.asf_session is None:
-        data.asf_session = ASFSession()
+    if opts.session is None:
+        opts.session = ASFSession()
 
     listify_fields = [
         'absoluteOrbit',
@@ -50,8 +48,8 @@ def search(data: Union[ASFSearchOptions, dict],
         'relativeOrbit'
     ]
     for key in listify_fields:
-        if key in data and not isinstance(data[key], list):
-            data[key] = [data[key]]
+        if key in opts and not isinstance(opts[key], list):
+            opts[key] = [opts[key]]
 
     flatten_fields = [
         'absoluteOrbit',
@@ -60,8 +58,8 @@ def search(data: Union[ASFSearchOptions, dict],
         'offNadirAngle',
         'relativeOrbit']
     for key in flatten_fields:
-        if key in data:
-            data[key] = flatten_list(data[key])
+        if key in opts:
+            opts[key] = flatten_list(opts[key])
 
     join_fields = [
         'beamMode',
@@ -76,17 +74,19 @@ def search(data: Union[ASFSearchOptions, dict],
         'processingLevel',
         'product_list']
     for key in join_fields:
-        if key in data:
-            data[key] = ','.join(data[key])
+        if key in opts:
+            opts[key] = ','.join(opts[key])
 
-    # Remove the auth from the search object, before searching:
-    session = data.asf_session
-    del data.asf_session
-    data = dict(data)
-    data['output'] = 'geojson'
-    # Join the url, to guantee *exatly* one '/' between each url fragment:
-    host = '/'.join(s.strip('/') for s in [f'https://{host}', f'{INTERNAL.SEARCH_PATH}'])
-    response = session.post(host, data=data)
+    # Special case to unravel WKT field a little for compatibility
+    if opts.get('intersectsWith') is not None:
+        (shapeType, shape) = opts['intersectsWith'].split(':')
+        del opts['intersectsWith']
+        opts[shapeType] = shape
+
+    opts['output'] = 'geojson'
+    # Join the url, to guarantee *exactly* one '/' between each url fragment:
+    host = '/'.join(s.strip('/') for s in [f'https://{opts.host}', f'{INTERNAL.SEARCH_PATH}'])
+    response = opts.session.post(host, data=data)
 
     try:
         response.raise_for_status()

@@ -12,3 +12,5 @@ CMR_PATH = 'granules.umm_json'  # TODO: this ain't the right path, fix it once y
 CMR_PAGE_SIZE = 2000
 EDL_HOST = 'urs.earthdata.nasa.gov'
 EDL_CLIENT_ID = 'BO_n7nTIlMljdvU6kRRB3g'
+
+DEFAULT_PROVIDER = 'ASF'
