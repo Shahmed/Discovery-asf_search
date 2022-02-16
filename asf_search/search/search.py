@@ -8,6 +8,7 @@ import math
 from asf_search import __version__
 from asf_search.ASFSearchResults import ASFSearchResults
 from asf_search.ASFSearchOptions import ASFSearchOptions
+from asf_search.search.CMR import CMRQuery
 from asf_search.ASFSession import ASFSession
 from asf_search.ASFProduct import ASFProduct
 from asf_search.exceptions import ASFSearch4xxError, ASFSearch5xxError, ASFServerError
@@ -24,80 +25,25 @@ def search(opts: Union[ASFSearchOptions, dict]) -> ASFSearchResults:
     if type(opts) is not ASFSearchOptions:
         data = ASFSearchOptions(**opts)
     else:
-        # Don't add defaults to the original object:
+        # Don't mangle original opts object
         opts = copy(opts)
-    # Set some defaults:
-    if opts.session is None:
-        opts.session = ASFSession()
 
-    listify_fields = [
-        'absoluteOrbit',
-        'asfFrame',
-        'beamMode',
-        'collectionName',
-        'frame',
-        'granule_list',
-        'groupID',
-        'instrument',
-        'lookDirection',
-        'offNadirAngle',
-        'platform',
-        'polarization',
-        'processingLevel',
-        'product_list',
-        'relativeOrbit'
-    ]
-    for key in listify_fields:
-        if key in opts and not isinstance(opts[key], list):
-            opts[key] = [opts[key]]
+    query = CMRQuery(params=opts)
 
-    flatten_fields = [
-        'absoluteOrbit',
-        'asfFrame',
-        'frame',
-        'offNadirAngle',
-        'relativeOrbit']
-    for key in flatten_fields:
-        if key in opts:
-            opts[key] = flatten_list(opts[key])
-
-    join_fields = [
-        'beamMode',
-        'collectionName',
-        'flightDirection',
-        'granule_list',
-        'groupID',
-        'instrument',
-        'lookDirection',
-        'platform',
-        'polarization',
-        'processingLevel',
-        'product_list']
-    for key in join_fields:
-        if key in opts:
-            opts[key] = ','.join(opts[key])
-
-    # Special case to unravel WKT field a little for compatibility
-    if opts.get('intersectsWith') is not None:
-        (shapeType, shape) = opts['intersectsWith'].split(':')
-        del opts['intersectsWith']
-        opts[shapeType] = shape
-
-    opts['output'] = 'geojson'
     # Join the url, to guarantee *exactly* one '/' between each url fragment:
-    host = '/'.join(s.strip('/') for s in [f'https://{opts.host}', f'{INTERNAL.SEARCH_PATH}'])
-    response = opts.session.post(host, data=data)
+    #host = '/'.join(s.strip('/') for s in [f'https://{opts.host}', f'{INTERNAL.SEARCH_PATH}'])
+    #response = opts.session.post(host, data=opts)
 
-    try:
-        response.raise_for_status()
-    except HTTPError:
-        if 400 <= response.status_code <= 499:
-            raise ASFSearch4xxError(f'HTTP {response.status_code}: {response.json()["error"]["report"]}')
-        if 500 <= response.status_code <= 599:
-            raise ASFSearch5xxError(f'HTTP {response.status_code}: {response.json()["error"]["report"]}')
-        raise ASFServerError(f'HTTP {response.status_code}: {response.json()["error"]["report"]}')
+    #try:
+    #    response.raise_for_status()
+    #except HTTPError:
+    #    if 400 <= response.status_code <= 499:
+    #        raise ASFSearch4xxError(f'HTTP {response.status_code}: {response.json()["error"]["report"]}')
+    #    if 500 <= response.status_code <= 599:
+    #        raise ASFSearch5xxError(f'HTTP {response.status_code}: {response.json()["error"]["report"]}')
+    #    raise ASFServerError(f'HTTP {response.status_code}: {response.json()["error"]["report"]}')
 
-    products = [ASFProduct(f) for f in response.json()['features']]
+    #products = [ASFProduct(f) for f in response.json()['features']]
     return ASFSearchResults(products)
 
 

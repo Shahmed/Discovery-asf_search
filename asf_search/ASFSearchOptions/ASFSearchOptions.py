@@ -1,78 +1,62 @@
-from collections import UserDict
 from .validator_map import validator_map, validate
 from asf_search import ASFSession
 from asf_search.constants import INTERNAL
-
-# NOTE: Keep going back and forth on if to accept custom attr's. (i.e. output=geojson)
-# leaning towards not, only because of how many edge cases there might be. (real maxResults vs custom maxresults)
-# can still do
-# mydict = dict(ASFSearchOption)
-# mydict["output"] = "geojson"
-# Have both versions below just in case, worth a design dive on:
-# Need to edit search.search, line 80ish with whichever we go with
+from .defaults import defaults
 
 
-class ASFSearchOptions():
+class ASFSearchOptions:
     def __init__(self, **kwargs):
+        """
+        Initialize the object, creating the list of attributes based on the contents of validator_map, and assign them based on kwargs
+
+        :param kwargs: any search options to be set immediately
+        """
         # init the built in attrs:
         for key in validator_map.keys():
             self.__setattr__(key, None)
-
-        # set any defaults
-        self.session = ASFSession()
-        self.host = INTERNAL.SEARCH_API_HOST
-        self.cmr_provider = INTERNAL.DEFAULT_PROVIDER
         
-        # Apply any ones passsed in:
+        # Apply any parameters passed in:
         for key, value in kwargs.items():
             self.__setattr__(key, value)
-    
+
     def __setattr__(self, key, value):
+        """
+        Set a search option, restricting to the keys in validator_map only, and applying validation to the value before setting
+
+        :param key: the name of the option to be set
+        :param value: the value to which to set the named option
+        """
         # self.* calls custom __setattr__ method, creating inf loop. Use super().*
         # Let values always be None, even if their validator doesn't agree. Used to delete them too:
         if key in validator_map:
-            if value is None: # maintain defaults
-                if key == 'cmr_provider':
-                    super().__setattr__(key, INTERNAL.DEFAULT_PROVIDER)
-                elif key == 'host':
-                    super().__setattr__(key, INTERNAL.SEARCH_API_HOST)
-                elif key == 'session':
-                    super().__setattr__(key, ASFSession)
+            if value is None:  # always maintain defaults on required fields
+                if key in defaults:
+                    super().__setattr__(key, defaults[key])
                 else:
                     super().__setattr__(key, None)
             else:
                 super().__setattr__(key, validate(key, value))
         else:
             raise KeyError(f"key '{key}' is not a valid search option (setattr)")
-            ## OR if we support custom attrs:
-            # super().__setattr__(key, value)
 
     def __delattr__(self, item):
-        # If the atter is one of ours, just set it to None. Else remove whatever the user did:
+        """
+        Clear a search option by setting its value to None
+
+        :param item: the name of the option to clear
+        """
         if item in validator_map:
             self.__setattr__(item, None)
         else:
             raise KeyError(f"key '{item}' is not a valid search option (delattr)")
-            ## OR if we support custom attrs:
-            # self.__delattr__(item)
 
     def __iter__(self):
         """
         Filters search parameters, only returning populated fields. Used when casting to a dict.
         """
+        no_export = ['host', 'session']  # TODO: remove 'provider' from this list once we're hitting CMR directly
         for key in validator_map:
-            value = self.__getattribute__(key)
-            if value is not None:
-                yield key, value
-        ## OR if we support custom attrs:
-        # for key in dir(self):
-        #     if key.startswith("__"):
-        #         continue
-        #     elif key in validator_map:
-        #         value = self.__getattribute__(key)
-        #         if value is not None:
-        #             yield key, value
-        #     else:
-        #         yield key, self.__getattribute__(key)
-
-
+            if key not in no_export:
+                value = self.__getattribute__(key)
+                if value is not None:
+                    yield key, value

@@ -8,7 +8,7 @@ MISSION_PATH = '/services/utils/mission_list'
 DATE_PATH = '/services/utils/date'
 
 CMR_HOST = 'cmr.earthdata.nasa.gov'
-CMR_PATH = 'granules.umm_json'  # TODO: this ain't the right path, fix it once you have internet again
+CMR_PATH = 'granules.umm_json'
 CMR_PAGE_SIZE = 2000
 EDL_HOST = 'urs.earthdata.nasa.gov'
 EDL_CLIENT_ID = 'BO_n7nTIlMljdvU6kRRB3g'

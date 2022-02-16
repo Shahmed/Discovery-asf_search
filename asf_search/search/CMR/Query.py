@@ -9,33 +9,30 @@ from .Subquery import CMRSubQuery
 class CMRQuery:
     def __init__(
             self,
-            params=None,
-            maxResults=None,
-            cmr_host=INTERNAL.CMR_HOST,
-            cmr_token=None,
-            cmr_provider=None
+            opts
     ):
-        self.cmr_host = cmr_host
-        self.cmr_provider = cmr_provider
-        self.cmr_token = cmr_token
-        self.maxResults = maxResults
+        self.cmr_host = opts.cmr_host
+        self.cmr_provider = opts.provider
+        self.cmr_token = opts.token
+        self.maxResults = opts.maxResults
 
+        # These additional params will be applied to each subquery
         self.extra_params = [
-            {'provider': self.cmr_provider},
-            {'options[temporal][and]': 'true'},
-            {'sort_key[]': '-end_date'},
-            {'sort_key[]': 'granule_ur'},
-            {'options[platform][ignore_case]': 'true'}
+            ('provider', self.cmr_provider),
+            ('options[temporal][and]', 'true'),
+            ('sort_key[]', '-end_date'),
+            ('sort_key[]', 'granule_ur'),
+            ('options[platform][ignore_case]', 'true')
         ]
 
         # Check for small result set
         self.page_size = INTERNAL.CMR_PAGE_SIZE
         if self.maxResults is not None and self.maxResults > INTERNAL.CMR_PAGE_SIZE:
-            self.extra_params.append({'page_size': INTERNAL.CMR_PAGE_SIZE})
-            self.extra_params.append({'scroll': 'true'})  # CMR team has requested we leave this off entirely if false
+            self.extra_params.append(('page_size', INTERNAL.CMR_PAGE_SIZE))
+            self.extra_params.append(('scroll', 'true'))  # CMR team has requested we leave this off entirely if false
         else:
             self.page_size = self.maxResults
-            self.extra_params.append({'page_size': self.page_size})
+            self.extra_params.append(('page_size', self.page_size))
 
         self.resultsYielded = 0
 

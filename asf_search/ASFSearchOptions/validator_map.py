@@ -3,16 +3,9 @@ from .validators import (
     parse_string, parse_wkt, parse_date,
     parse_string_list, parse_int_list, parse_int_or_range_list,
     parse_float_or_range_list,
-    parse_coord_list, parse_bbox_list, parse_point_list,
     parse_session
 )
 
-import dateparser
-
-
-## Not included in map:
-# host
-# cmr_token
 
 def validate(key, value):
     if key not in validator_map:
@@ -25,13 +18,14 @@ def validate(key, value):
         raise KeyError(error_msg)
     return validator_map[key](value)
 
+
 validator_map = {
-#   API parameters            Parser
+    # Search parameters       Parser
     'maxResults':             int,
     'absoluteOrbit':          parse_int_or_range_list,
     'asfFrame':               parse_int_or_range_list,
     'beamMode':               parse_string_list,
-    'cmr_provider':           parse_string,
+    'provider':               parse_string,
     'collectionName':         parse_string,
     'maxDoppler':             float,
     'minDoppler':             float,
@@ -93,10 +87,6 @@ relativeOrbit: Path or track of satellite during data acquisition. For UAVSAR it
 season: Start and end day of year for desired seasonal range. This option is used in conjunction with start/end to specify a seasonal range within an overall date range.
 start: Start date of data acquisition. Supports timestamps as well as natural language such as "3 weeks ago"
 maxResults: The maximum number of results to be returned by the search
-
-These keys TBD:
-
 host: SearchAPI host, defaults to Production SearchAPI. This option is intended for dev/test purposes.
-cmr_token: EDL authentication token for authenticated searches, see https://urs.earthdata.nasa.gov/user_tokens
-cmr_provider: Custom provider name to constrain CMR results to, for more info on how this is used, see https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#c-provider
+provider: Custom provider name to constrain CMR results to, for more info on how this is used, see https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#c-provider
 """
