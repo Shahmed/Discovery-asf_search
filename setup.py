@@ -1,6 +1,5 @@
 """asf_search setuptools configuration"""
 from setuptools import find_packages, setup
-import subprocess
 
 requirements = [
         "requests",
@@ -13,22 +12,35 @@ requirements = [
         "more-itertools"
     ]
 
+test_requirements = [
+    "pytest",
+    "pytest-automation",
+    "pytest-cov",
+    "pytest-xdist",
+    "coverage",
+    "requests-mock",
+]
+
 with open("README.md", "r") as readme_file:
     readme = readme_file.read()
 
 setup(
     name="asf_search",
-    use_scm_version=True,
+    # version=Declared in pyproject.toml, through "[tool.setuptools_scm]"
     author="Alaska Satellite Facility Discovery Team",
     author_email="uaf-asf-discovery@alaska.edu",
     description="Python wrapper for ASF's SearchAPI",
     long_description=readme,
     long_description_content_type="text/markdown",
     url="https://github.com/asfadmin/Discovery-asf_search.git",
-    packages=find_packages(),
+    project_urls={
+        'Documentation': 'https://docs.asf.alaska.edu/asf_search/basics/'
+    },
+    packages=find_packages(exclude=["tests.*", "tests", "examples.*", "examples"]),
     package_dir={'asf_search': 'asf_search'},
     python_requires='>=3.6',
     install_requires=requirements,
+    extras_require={ "test": test_requirements },
     license='BSD',
     license_files=('LICENSE',),
     classifiers=[
@@ -49,6 +61,4 @@ setup(
         "Topic :: Scientific/Engineering :: Hydrology",
         "Topic :: Utilities"
     ],
-    #test_suite='???',
-    #tests_require=['???'],
 )

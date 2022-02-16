@@ -6,9 +6,21 @@ jobs:
   run-tests:
     runs-on: ubuntu-latest
     steps:
-      # Get the code:
       - uses: actions/checkout@v2
-      # Run the local action:
-      - uses: ./.github/actions/pytest-automation
+
+      - name: Install Dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install .[test]
+
+      - name: Run Tests
+        run: python3 -m pytest -n auto --cov=asf_search --cov-report=xml --dont-run-file test_known_bugs .
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
         with:
-          PYTEST_OPTIONS: -n auto
+          fail_ci_if_error: true
+          files: ./coverage.xml
+          flags: unittests
+          name: asf_admin pytest
+          verbose: true
