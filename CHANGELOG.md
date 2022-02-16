@@ -1,33 +1,4 @@
 # Changelog
-## [3.0.7](https://github.com/asfadmin/Discovery-asf_search/compare/v3.0.6...v3.0.7)
-### Changed
-- Re-enable run-pytest workflow
-  - Add tests for `ASFSearch, ASFSession, ASFProduct` as well as baseline, geographic, and search modules
-  - Add Pytest-Automation Plugin integration
-  - Add automated CodeCov badge to readme
-
-### Fixed
-- Fix error while raising ASFBaselineError in `baseline_search.get_stack_params()`
-
-## [3.0.6](https://github.com/asfadmin/Discovery-asf_search/compare/v3.0.5...v3.0.6)
-### Changed
-- Skip download if file already exists
-  - In the future we will apply file size and/or checksum checks to ensure the existing file is correct
-
-## [3.0.5](https://github.com/asfadmin/Discovery-asf_search/compare/v3.0.4...v3.0.5)
-### Added
-- Add documentation URL to setup.py
-- Add Gitter badge/link to readme
-### Fixed
-- Change hyphens to underscores in some product type constants
-
-## [3.0.4](https://github.com/asfadmin/Discovery-asf_search/compare/v3.0.3...v3.0.4)
-### Changed
-- When working with source, package **must** be installed directly:
-  - `python3 -m pip install -e .`
-### Fixed
-- In-region S3 downloads should now function without issue
-
 
 All notable changes to this project will be documented in this file.
 
@@ -57,7 +28,7 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ------
 
-## [4.0.0](https://github.com/asfadmin/Discovery-asf_search/compare/v3.0.3...v4.0.0)
+## [4.0.0](https://github.com/asfadmin/Discovery-asf_search/compare/v3.0.3...v4.0.0) WIP
 ### Added
 - `ASFSearchOptions`, which validates each of the parameters as they're added
 
@@ -70,6 +41,37 @@ and uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Removed
 - Old GitHub actions
+
+------
+
+## [3.1.0](https://github.com/asfadmin/Discovery-asf_search/compare/v3.0.6...v3.1.0)
+### Changed
+- Re-enable run-pytest workflow
+  - Add tests for `ASFSearch, ASFSession, ASFProduct` as well as baseline, geographic, and search modules
+  - Add Pytest-Automation Plugin integration
+  - Add automated CodeCov badge to readme
+
+### Fixed
+- Fix error while raising ASFBaselineError in `baseline_search.get_stack_params()`
+
+## [3.0.6](https://github.com/asfadmin/Discovery-asf_search/compare/v3.0.5...v3.0.6)
+### Changed
+- Skip download if file already exists
+  - In the future we will apply file size and/or checksum checks to ensure the existing file is correct
+
+## [3.0.5](https://github.com/asfadmin/Discovery-asf_search/compare/v3.0.4...v3.0.5)
+### Added
+- Add documentation URL to setup.py
+- Add Gitter badge/link to readme
+### Fixed
+- Change hyphens to underscores in some product type constants
+
+## [3.0.4](https://github.com/asfadmin/Discovery-asf_search/compare/v3.0.3...v3.0.4)
+### Changed
+- When working with source, package **must** be installed directly:
+  - `python3 -m pip install -e .`
+### Fixed
+- In-region S3 downloads should now function without issue
 
 ------
 
