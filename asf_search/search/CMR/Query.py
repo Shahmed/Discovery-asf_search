@@ -3,6 +3,7 @@ import itertools
 import logging
 
 from asf_search.constants import INTERNAL
+from asf_search.search.CMR.translate import input_map
 from .Subquery import CMRSubQuery
 
 

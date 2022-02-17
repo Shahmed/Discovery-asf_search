@@ -63,3 +63,8 @@ test_types:
     required_keys: ["parameters", "status_code", "report"]
     required_in_title: test-ASFSearch-search-error
     method: test_ASFSearch_Search_Error
+
+- For running Query.List_Params tests:
+    required_keys: ["asf_parameters", "cmr_parameters"]
+    required_in_title: tests-query-list-params
+    method: test_query_translate_param

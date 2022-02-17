@@ -1,0 +1,4 @@
+tests:
+- Test tests-query-list-params:
+    asf_parameters: asf_list_params.yml
+    cmr_parameters: cmr_list_params.yml

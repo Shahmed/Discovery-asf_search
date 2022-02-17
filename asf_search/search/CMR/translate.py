@@ -57,3 +57,6 @@ def translate_opts(opts: ASFSearchOptions) -> list:
         cmr_opts[i] = cmr_field_map[opt[0]]['key'], cmr_field_map[opt[0]]['fmt'].format(opt[1])
 
     return cmr_opts
+
+def input_map():
+    return cmr_field_map

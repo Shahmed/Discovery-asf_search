@@ -10,9 +10,14 @@ def run_test_get_preprocessed_stack_params(product):
     params = get_stack_opts(reference)
 
     original_properties = product['properties']
-    assert(params['processingLevel'] == [original_properties['processingLevel']])
-    assert(params['insarStackId'] == original_properties['insarStackId'])
-    assert(len(params) == 2)
+    assert(params.processingLevel == [original_properties['processingLevel']])
+    assert(params.insarStackId == original_properties['insarStackId'])
+    
+    # relevant_params = [param for param in params if param is not 'provider']
+    
+    for param in ['processingLevel', 'insarStackId']:
+        assert(dict(params)[param])
+    # assert(len(relevant_params) == 2)
     
 
 def run_test_get_unprocessed_stack_params(product):
@@ -20,9 +25,14 @@ def run_test_get_unprocessed_stack_params(product):
     params = get_stack_opts(reference)
 
     original_properties = product['properties']
-    assert(original_properties['polarization'] in params['polarization'])
-    assert(['VV', 'VV+VH'] == params['polarization'])
-    assert(len(params) == 7)
+
+    for param in ['processingLevel', 'platform', 'beamMode', 'relativeOrbit', 'polarization', 'intersectsWith']:
+        assert(dict(params)[param])
+    assert(original_properties['polarization'] in params.polarization)
+    # assert(['VV', 'VV+VH'] == params.polarization)
+    
+    relevant_params = [param for param in params if param is not 'provider']
+    assert(len(relevant_params) == 7)
 
 def run_get_stack_opts_invalid_insarStackId(product):
     invalid_reference = ASFProduct(product)

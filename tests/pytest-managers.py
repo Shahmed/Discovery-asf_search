@@ -3,6 +3,7 @@ from asf_search.exceptions import ASFAuthenticationError, ASFSearch4xxError, ASF
 from ASFProduct.test_ASFProduct import run_test_ASFProduct_Geo_Search, run_test_stack
 from ASFSession.test_ASFSession import run_auth_with_creds
 from BaselineSearch.test_baseline_search import *
+from tests.Query.test_Query import run_test_query_translate_param
 from tests.Search.test_Search import run_test_ASFSearchResults, run_test_search, run_test_search_http_error
 
 from pytest import raises
@@ -165,6 +166,11 @@ def test_ASFSearch_Search_Error(**args) -> None:
         with raises(ASFSearch5xxError):
             run_test_search_http_error(parameters, error_code, report)
 
+def test_query_translate_param(**args) -> None:
+    test_info = args["test_info"]
+    asf_parameters = get_resource(test_info["asf_parameters"])
+    cmr_parameters = get_resource(test_info["cmr_parameters"])
+    run_test_query_translate_param(asf_parameters, cmr_parameters)    
 
 def get_resource(yml_file):
     
