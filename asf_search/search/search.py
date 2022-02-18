@@ -28,7 +28,7 @@ def search(opts: Union[ASFSearchOptions, dict]) -> ASFSearchResults:
         # Don't mangle original opts object
         opts = copy(opts)
 
-    query = CMRQuery(params=opts)
+    query = CMRQuery(opts=opts)
 
     # Join the url, to guarantee *exactly* one '/' between each url fragment:
     #host = '/'.join(s.strip('/') for s in [f'https://{opts.host}', f'{INTERNAL.SEARCH_PATH}'])
@@ -44,7 +44,7 @@ def search(opts: Union[ASFSearchOptions, dict]) -> ASFSearchResults:
     #    raise ASFServerError(f'HTTP {response.status_code}: {response.json()["error"]["report"]}')
 
     #products = [ASFProduct(f) for f in response.json()['features']]
-    return ASFSearchResults(products)
+    return ASFSearchResults(query.sub_queries)
 
 
 def flatten_list(items: Iterable[Union[float, Tuple[float, float]]]) -> str:

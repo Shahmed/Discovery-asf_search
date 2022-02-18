@@ -1,49 +1,53 @@
 from typing import List
 import itertools
 import logging
+from asf_search.ASFSearchOptions.ASFSearchOptions import ASFSearchOptions
 
 from asf_search.constants import INTERNAL
 from asf_search.search.CMR.translate import input_map
 from .Subquery import CMRSubQuery
+from requests import request
 
 
 class CMRQuery:
     def __init__(
             self,
-            opts
+            opts: ASFSearchOptions
     ):
-        self.cmr_host = opts.cmr_host
+        self.cmr_host = INTERNAL.CMR_HOST
         self.cmr_provider = opts.provider
-        self.cmr_token = opts.token
+        # self.cmr_token = opts.token
         self.maxResults = opts.maxResults
+        # self.req_fields = opts.req_fields
+        self.req_fields = []
 
         # These additional params will be applied to each subquery
         self.extra_params = [
-            ('provider', self.cmr_provider),
-            ('options[temporal][and]', 'true'),
-            ('sort_key[]', '-end_date'),
-            ('sort_key[]', 'granule_ur'),
-            ('options[platform][ignore_case]', 'true')
+            {'provider': self.cmr_provider},
+            {'options[temporal][and]': 'true'},
+            {'sort_key[]': '-end_date'},
+            {'sort_key[]': 'granule_ur'},
+            {'options[platform][ignore_case]': 'true'}
         ]
 
         # Check for small result set
         self.page_size = INTERNAL.CMR_PAGE_SIZE
         if self.maxResults is not None and self.maxResults > INTERNAL.CMR_PAGE_SIZE:
-            self.extra_params.append(('page_size', INTERNAL.CMR_PAGE_SIZE))
-            self.extra_params.append(('scroll', 'true'))  # CMR team has requested we leave this off entirely if false
+            self.extra_params.append({'page_size': INTERNAL.CMR_PAGE_SIZE})
+            self.extra_params.append({'scroll': 'false'})  # CMR team has requested we leave this off entirely if false
         else:
             self.page_size = self.maxResults
-            self.extra_params.append(('page_size', self.page_size))
+            self.extra_params.append({'page_size': self.page_size})
 
         self.resultsYielded = 0
 
         self.sub_queries = [
             CMRSubQuery(
-                params,
+                self.req_fields,
                 params=list(query),
                 extra_params=self.extra_params
             )
-            for query in subquery_list_from(params)
+            for query in subquery_list_from(dict(opts))
         ]
 
         logging.debug('New CMRQuery object ready to go')
@@ -112,6 +116,9 @@ def subquery_list_from(params: dict) -> List:
         else:
             subquery_params[k] = v
 
+    if 'maxResults' in subquery_params:
+        del subquery_params['maxResults']
+
     sub_queries = cartesian_product(subquery_params)
     formatted_list_params = format_list_params(list_params)
 
@@ -138,7 +145,7 @@ def format_list_params(list_params):
 
 def format_query_params(params):
     listed_params = []
-
+    
     for param_name, param_val in params.items():
         plist = translate_param(param_name, param_val)
         listed_params.append(plist)
@@ -150,7 +157,7 @@ def translate_param(param_name, param_val):
     param_list = []
 
     cmr_input_map = input_map()
-
+    
     param_input_map = cmr_input_map[param_name]
     cmr_param = param_input_map[0]
     cmr_format_str = param_input_map[1]

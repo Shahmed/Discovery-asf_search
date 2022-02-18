@@ -52,7 +52,7 @@ validator_map = {
     'instrument':             parse_string,
     # Config parameters       Parser
     'session':                parse_session,
-    'host':                   parse_string
+    'host':                   parse_string,
 }
 
 

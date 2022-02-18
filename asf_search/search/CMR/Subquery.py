@@ -1,9 +1,13 @@
 import logging
 from math import ceil
+from platform import platform
 import re
 from time import sleep, perf_counter
 
 import requests
+from asf_search.constants.INTERNAL import CMR_HOST, CMR_PATH, EDL_CLIENT_ID
+
+from asf_search.search.CMR.Translate.Exceptions import CMRError
 
 
 class CMRSubQuery:
@@ -15,11 +19,13 @@ class CMRSubQuery:
         self.hits = 0
         self.results = []
 
-        self.scroll = get_config()['cmr_scroll']
+        self.scroll =  False #get_config()['cmr_scroll']
 
         self.params = self.combine_params(self.params, self.extra_params)
 
         self.headers = {}
+        
+        self.request = None
 
         if self.should_use_asf_frame():
             self.use_asf_frame()
@@ -40,10 +46,9 @@ class CMRSubQuery:
 
     def should_use_asf_frame(self):
         asf_frame_platforms = ['SENTINEL-1A', 'SENTINEL-1B', 'ALOS']
-
         return any([
-            p[0] == 'platform[]' and p[1] in asf_frame_platforms
-            for p in self.params
+            p[0] == 'platform[]' and p[1].upper() in asf_frame_platforms
+            for p in [param for param in self.params if isinstance(param[1], str)]
         ])
 
     def use_asf_frame(self):
@@ -108,11 +113,12 @@ class CMRSubQuery:
         self.sid = None
         if self.scroll:
             self.sid = response.headers['CMR-Scroll-Id']
-            request.cmr_scroll_sessions.append(self.sid)
+            self.request.cmr_scroll_sessions.append(self.sid)
 
         logging.debug(f'CMR reported {self.hits} hits for session {self.sid}')
         logging.debug('Parsing page 1')
 
+        # TODO: Write parse_cmr_response
         for p in parse_cmr_response(response, self.req_fields):
             yield p
 
@@ -184,7 +190,7 @@ class CMRSubQuery:
 
     def asf_session(self):
         session = requests.Session()
-        headers = get_config()['cmr_headers']
+        headers ={'client-id': EDL_CLIENT_ID} # get_config()['cmr_headers']
         session.headers.update(headers)
         logging.debug('New requests.Session with headers:')
         logging.debug(session.headers)
@@ -192,9 +198,10 @@ class CMRSubQuery:
         return session
 
     def cmr_api_url(self):
-        cfg = get_config()
+        # cfg = get_config()
 
-        base, path = cfg['cmr_base'], cfg['cmr_api']
+        # base, path = cfg['cmr_base'], cfg['cmr_api']
+        base, path = 'https://' + CMR_HOST, CMR_PATH + '?'
         url = f'{base}{path}'
 
         return url
